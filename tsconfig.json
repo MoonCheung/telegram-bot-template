@@ -12,8 +12,7 @@
       "#root/*": ["./src/*"]
     },
     "lib": ["esnext"],
-    "types": ["node"],
-
+    "types": ["node", "@cloudflare/workers-types"],
     // Other Outputs
     "sourceMap": true,
     // "declaration": true,

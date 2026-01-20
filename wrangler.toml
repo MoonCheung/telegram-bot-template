@@ -1,0 +1,11 @@
+name = "telegram-bot-template"
+compatibility_date = "2026-01-20"
+main = "src/main.ts"
+
+# Configure environment variables
+[vars]
+# BOT_TOKEN = will be set via wrangler secret
+# BOT_WEBHOOK = "https://www.example.com/webhook"
+
+[dev]
+port = 3000
