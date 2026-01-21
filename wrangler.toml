@@ -4,8 +4,8 @@ main = "src/main.ts"
 
 # Configure environment variables
 [vars]
-# BOT_TOKEN = will be set via wrangler secret
-# BOT_WEBHOOK = "https://www.example.com/webhook"
+BOT_TOKEN = "8481175310:AAGVHEs3uBNUBwijrnzsGKx6WFVYjAXbUMA"
+BOT_WEBHOOK = "https://el5vss-ip-223-84-224-139.tunnelmole.net"
 
 [dev]
 port = 3000
