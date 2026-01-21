@@ -9,6 +9,9 @@
   "author": "MoonCheung <ikmoons.is@gmail.com>",
   "scripts": {
     "dev": "wrangler dev",
+    "dev:local": "wrangler dev --local",
+    "dev:tunnel": "wrangler dev --remote",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000",
     "deploy": "wrangler deploy",
     "tail": "wrangler tail"
   },
