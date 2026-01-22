@@ -1,5 +1,7 @@
 import { Hono } from "hono";
-import { Bot, webhookCallback } from "grammy";
+import { env } from "cloudflare:workers";
+import { bot } from '#root/bot';
+import { webhookCallback } from 'grammy';
 
 type Env = {
   BOT_TOKEN: string;
@@ -10,26 +12,70 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.get('/', (c) => c.text('Hello! Your Telegram bot server is running.'));
 
-app.post('/webhook', async (c) => {
+app.post('/bot', async (ctx, next) => {
   console.log("Received a webhook update from Telegram!");
-  const bot = new Bot(c.env.BOT_TOKEN);
+  self.host = new URL(ctx.req.url).host;
+	return next();
+}, webhookCallback(bot, 'hono', {
+	secretToken: env.BOT_WEBHOOK_SECRET
+}))
 
-  console.log('body:', c.body)
+// 设置 Webhook 的端点（部署后访问一次即可）
+app.get('/setup', async (ctx) => {
+  const host = new URL(ctx.req.url).host;
+  const botUrl = `https://${host}/bot`;
 
-  bot.command('start', (ctx) => {
-    return ctx.reply('👋 Hello! Webhook is working!');
-  });
+  // 立即返回响应，不等待 Telegram API
+  ctx.executionCtx.waitUntil(
+    (async () => {
+      try {
+        await bot.api.setWebhook(botUrl, { 
+          secret_token: env.BOT_WEBHOOK_SECRET,
+          drop_pending_updates: true
+        });
+        await bot.api.setMyCommands([
+          { command: 'settings', description: 'Setting up the bot' },
+        ]);
+        console.log('✅ Webhook setup successful:', botUrl);
+      } catch (err) {
+        console.error('❌ Webhook setup failed:', err);
+      }
+    })()
+  );
 
-  bot.command('help', (ctx) => {
-    return ctx.reply('👋 Need any help?');
-  });
+  // 立即返回响应
+  return ctx.text(`Webhook setup initiated for ${botUrl}. Check console for result.`);
+})
 
-  bot.on('message:text', async (ctx) => {
-    console.log('watch message:', ctx.message.text)
-  })
+app.get('/status', async (ctx) => {
+  try {
+    const me = await bot.api.getMe()
+    const webhookInfo = await bot.api.getWebhookInfo()
+    
+    return ctx.json({
+      bot: {
+        id: me.id,
+        username: me.username,
+        first_name: me.first_name
+      },
+      webhook: {
+        url: webhookInfo.url || '未设置',
+        pending_updates: webhookInfo.pending_update_count,
+        last_error: webhookInfo.last_error_message || '无'
+      }
+    })
+  } catch (error: any) {
+    return ctx.json({ error: error.message }, 500)
+  }
+})
 
-  const handler = webhookCallback(bot, 'hono');
-  return await handler(c);
+app.get('/remove-webhook', async (ctx) => {
+  try {
+    await bot.api.deleteWebhook({ drop_pending_updates: true })
+    return ctx.json({ success: true, message: 'Webhook 已删除' })
+  } catch (error: any) {
+    return ctx.json({ error: error.message }, 500)
+  }
 })
 
 export default app;
