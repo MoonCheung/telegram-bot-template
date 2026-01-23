@@ -6,6 +6,7 @@ main = "src/main.ts"
 [vars]
 BOT_TOKEN = ""
 BOT_WEBHOOK = ""
+BOT_WEBHOOK_SECRET = ""
 # 
 [dev]
 port = 3000
