@@ -16,7 +16,6 @@
     "tail": "wrangler tail"
   },
   "dependencies": {
-    "@grammyjs/runner": "^2.0.3",
     "@grammyjs/types": "^3.23.0",
     "@hono/node-server": "^1.19.9",
     "grammy": "^1.39.3",
